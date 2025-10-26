@@ -1,0 +1,71 @@
+
+{
+    "seed_exercises" : [
+        {
+            "exercise_slug" : "bb-bench-press",
+            "exercise_name" : "Barbell Bench Press",
+            "tag_slugs" : ["Push"]
+        },
+        {
+            "exercise_slug" : "bb-squat",
+            "exercise_name" : "Barbell Squat",
+            "tag_slugs" : ["Legs"]
+        },
+        {
+            "exercise_slug" : "bb-deadlift",
+            "exercise_name" : "Barbell Deadlift",
+            "tag_slugs" : ["Pull"]
+        }
+    ],
+    "seed_workout_logs" : [
+        {
+            "exercise_slug" : "bb-bench-press",
+            "reps" : 8,
+            "weight" : 135,
+            "date_performed" : "2025-04-20",
+            "created_at" : "2025-04-20T16:25:08.139780"
+        },
+        {
+            "exercise_slug" : "bb-squat",
+            "reps" : 8,
+            "weight" : 225,
+            "date_performed" : "2025-04-20",
+            "created_at" : "2025-04-20T16:25:08.139815"
+        },
+        {
+            "exercise_slug" : "bb-deadlift",
+            "reps" : 8,
+            "weight" : 315,
+            "date_performed" : "2025-04-20",
+            "created_at" : "2025-04-20T16:25:08.139818"
+        }
+    ],
+    "seed_users" : [
+        {
+            "username" : "Skeletonboy",
+            "first_name" : "Victor",
+            "last_name" : "Yip",
+            "email" : "skeletonboy333@gmail.com",
+            "password" : "testing123",
+            "birth_year" : 1999,
+            "birth_month" : 9,
+            "height_raw" : 187,
+            "height_unit" : "CENTIMETERS"
+        }
+    ],
+    "seed_tags" : [
+        {
+            "tag_name" : "Push",
+            "tag_color" : "#BC1B00"
+        },
+        {
+            "tag_name" : "Pull",
+            "tag_color" : "#001BD8"
+        },
+        {
+            "tag_name" : "Legs",
+            "tag_color" : "#0F472B"
+        }
+    ]
+}
+

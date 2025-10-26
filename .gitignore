@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+.pytest_cache/
+
+# Temp files
+backend/test.py
+
+# Env
+backend/mock_env/
+backend/mock_api_env/
+backend/.env
+.env
+
+# Data
+backend/data/
+
+# Misc
+backend/dump.rdb
+.vscode/
+
+

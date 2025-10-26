@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  api:
+    image: api_service
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - ML_SERVICE_ENDPOINT=http://ml:8001
+    ports:
+      - 8000:8000
+    networks:
+      - backend-network
+    volumes:
+      - ./data:/repo/data
+  
+  ml:
+    image: ml_service
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - CHROMA_VDB_PATH=/repo/data/chroma_db
+      - TRANSCRIPT_PATH=/repo/data/transcripts
+    ports:
+      - 8001:8001
+    networks:
+      - backend-network
+    volumes:
+      - ./data:/repo/data
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    networks:
+      - backend-network
+    volumes:
+      - ./data/redis-cache:/data
+
+networks:
+  backend-network:

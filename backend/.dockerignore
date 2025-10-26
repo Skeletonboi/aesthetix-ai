@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+.pytest_cache/
+test.py
+
+# Env
+mock_env/
+mock_api_env/
+.env
+
+# Data
+data/
+
+# Misc
+dump.rdb
+
