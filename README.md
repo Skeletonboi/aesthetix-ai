@@ -10,17 +10,17 @@ The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on a custo
 
 ## ✨ Features
 - **AI Chat Assistant** - Ask any fitness/exercise question and get evidence-based answers
+- **Custom Data Ingestion Pipeline** - Automated Youtube channel scraping, summarization, and vector embedding ingestion scripts
 - **RAG-Powered Search** - Semantically searches across curated YouTube fitness content, research papers, and textbooks
 - **Custom JWT Authentication + Redis cache** - Custom JWT-based route authentication with refresh tokens and redis blocklist caching
 - **Full Exercise Customization** - Track and store any user-created exercise dynamically
-- **Vector Embeddings** - ChromaDB for semantic search across fitness knowledge base
 
 ## 🏗️ Architecture
 
 ### Services
 
 - **API Service** - Authentication, workout log / exercise creation, and chat routing
-- **ML Service** - Embedding, vector retrieval, and LLM inference
+- **ML Service** - Data ingestion, scraping, embedding, vector retrieval, and LLM inference
 - **Redis** - Caching layer for JWT token management
 - **PostgreSQL** - Storage for user data and fitness tracker data
 
