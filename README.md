@@ -31,7 +31,7 @@ The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on a custo
 
 **AI/ML:**
 - LangChain, LangGraph, ChromaDB, Sentence Transformers, OpenAI
-- [Custom Youtube Transcript Scraping Library](https://github.com/Skeletonboi/yt-transcript-util)
+- [Custom Python Library for Youtube Transcript Scraping](https://github.com/Skeletonboi/yt-transcript-util)
 
 **Infrastructure:**
 - Docker, Redis, PostgreSQL, Playwright
