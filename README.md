@@ -6,7 +6,7 @@ Custom fitness tracker with an AI assistant that integrates knowledge from fitne
 
 Aesthetix-AI is built using a FastAPI backend for user workout tracking, with SQLAlchemy and PostgreSQL for CRUD operations. Exercises and workout logs are independently stored and tagged with exposed endpoints for full user customization and granular control.
 
-The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on a custom automated data ingestion and summarization pipeline which includes automated scraping, cleaning, summarizing, and embedding of Youtube transcripts and textbooks. Embedding-based research paper retrieval and summarizaton is performed using Exa API.  
+The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on an automated data ingestion and summarization pipeline which includes automated scraping, cleaning, summarizing, and embedding of Youtube transcripts and textbooks. Embedding-based research paper retrieval and summarizaton is performed using Exa API.
 
 ## Features
 - **AI Chat Assistant** - Ask any fitness/exercise question and get evidence-based answers
@@ -15,14 +15,23 @@ The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on a custo
 - **Custom JWT Authentication + Redis cache** - Custom JWT-based route authentication with refresh tokens and redis blocklist caching
 - **Full Exercise Customization** - Track and store any user-created exercise dynamically
 
+## Data Workflow
+
+1. **Ingestion** - YouTube transcripts, and textbooks are chunked and embedded with the selected HuggingFace embedding model
+2. **Storage** - Embeddings stored in ChromaDB with metadata (video title, channel, timestamp)
+3. **Query** - User query is embedded and similar chunks retrieved via vector retrieval
+4. **Generation** - Retrieved context + user query sent to LLM for answer generation
+5. **Response** - AI responds with answer and source citations
+
+
 ## Architecture
 
-### Services
+### Deployed Containers/Services
 
-- **API Service** - Authentication, workout log / exercise creation, and chat routing
-- **ML Service** - Data ingestion, scraping, embedding, vector retrieval, and LLM inference
-- **Redis** - Caching layer for JWT token management
-- **PostgreSQL** - Storage for user data and fitness tracker data
+- **API Service** - workout log and exercise tracking, authentication, chat routing
+- **ML Service** - data ingestion, scraping, vector embedding/retrieval, web search, and inference
+- **Redis** - caching layer for JWT token management
+- **PostgreSQL** - RDBMS storage for user data and fitness tracker data
 
 ### Tech Stack
 
@@ -30,7 +39,7 @@ The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on a custo
 - FastAPI, SQLAlchemy, Pydantic, Alembic
 
 **AI/ML:**
-- LangChain/LangGraph, ChromaDB, Sentence Transformers, OpenAI, Docling
+- LangChain/LangGraph, ChromaDB, Sentence Transformers, OpenAI, Exa, Docling
 - [my custom python library for Youtube transcript scraping](https://github.com/Skeletonboi/yt-transcript-util)
 
 **Infrastructure:**
@@ -77,21 +86,22 @@ git clone https://github.com/YOUR_USERNAME/aesthetix-ai.git
 cd aesthetix-ai/backend
 ```
 
-2. **Configure environment variables**
-```bash
-cp .env.example .env
-# Edit .env with your API keys and database URLs
+2. **Set your environment variables**
 ```
+DATABASE_URL=<postgresql_database_url>
+JWT_SECRET=<your_jwt_encryption_secret>
+CHAT_MODEL_NAME=<your_chat_llm_model_name>
+CHAT_MODEL_PROVIDER=<your_llm_provider i.e. openai>
+LLM_API_KEY=<chat_model_api_key>
+EXA_API_KEY=<exa_api_key>
+HF_EMBED_MODEL_NAME=<hf_embedding_model_name>
+YT_API_KEY=<youtube_data_api_key>
 
-Required variables:
-```bash
-DATABASE_URL=postgresql+asyncpg://...
+CHROMA_VDB_PATH=<local_chromadb_savepath>
+TRANSCRIPT_PATH=<local_transcript_savepath>
+
 REDIS_HOST=redis
 REDIS_PORT=6379
-JWT_SECRET=your-secret-key
-LLM_API_KEY=your-openai-key
-EXA_API_KEY=your-exa-key
-CHROMA_VDB_PATH=/repo/data/chroma_db
 ```
 
 3. **Build and run with Docker Compose**
@@ -103,14 +113,7 @@ Services will be available at:
 - API: http://localhost:8000
 - ML Service: http://localhost:8001
 - Redis: localhost:6379
-
-## Workflow
-
-1. **Ingestion** - YouTube transcripts are chunked and embedded using Sentence Transformers
-2. **Storage** - Embeddings stored in ChromaDB with metadata (video title, channel, timestamp)
-3. **Query** - User question is embedded and similar chunks retrieved via vector retrieval
-4. **Generation** - Retrieved context + user query sent to LLM for answer generation
-5. **Response** - AI responds with answer and source citations
+- 
 
 ## TBD
 
