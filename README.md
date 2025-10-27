@@ -2,20 +2,20 @@
 
 Custom fitness tracker with an AI assistant that integrates knowledge from fitness-science Youtube channels, research papers, and textbooks, to deliver both scientifically grounded and practically proven advice.
 
-## 🎯 Overview
+## Overview
 
 Aesthetix-AI is built using a FastAPI backend for user workout tracking, with SQLAlchemy and PostgreSQL for CRUD operations. Exercises and workout logs are independently stored and tagged with exposed endpoints for full user customization and granular control.
 
 The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on a custom automated data ingestion and summarization pipeline which includes automated scraping, cleaning, summarizing, and embedding of Youtube transcripts and textbooks. Embedding-based research paper retrieval and summarizaton is performed using Exa API.  
 
-## ✨ Features
+## Features
 - **AI Chat Assistant** - Ask any fitness/exercise question and get evidence-based answers
 - **Custom Data Ingestion Pipeline** - Automated Youtube channel scraping, summarization, and vector embedding ingestion scripts
 - **RAG-Powered Search** - Semantically searches across curated YouTube fitness content, research papers, and textbooks
 - **Custom JWT Authentication + Redis cache** - Custom JWT-based route authentication with refresh tokens and redis blocklist caching
 - **Full Exercise Customization** - Track and store any user-created exercise dynamically
 
-## 🏗️ Architecture
+## Architecture
 
 ### Services
 
@@ -30,13 +30,13 @@ The integrated AI-assistant uses Retrieval-Augmented Generation (RAG) on a custo
 - FastAPI, SQLAlchemy, Pydantic, Alembic
 
 **AI/ML:**
-- LangChain, LangGraph, ChromaDB, Sentence Transformers, OpenAI
-- [Custom Python Library for Youtube Transcript Scraping](https://github.com/Skeletonboi/yt-transcript-util)
+- LangChain/LangGraph, ChromaDB, Sentence Transformers, OpenAI, Docling
+- [my custom python library for Youtube transcript scraping](https://github.com/Skeletonboi/yt-transcript-util)
 
 **Infrastructure:**
-- Docker, Redis, PostgreSQL, Playwright
+- Docker, Redis, PostgreSQL
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 aesthetix-ai/
@@ -60,7 +60,7 @@ aesthetix-ai/
 └── README.md
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -104,7 +104,7 @@ Services will be available at:
 - ML Service: http://localhost:8001
 - Redis: localhost:6379
 
-## 🧠 How It Works
+## Workflow
 
 1. **Ingestion** - YouTube transcripts are chunked and embedded using Sentence Transformers
 2. **Storage** - Embeddings stored in ChromaDB with metadata (video title, channel, timestamp)
@@ -112,14 +112,7 @@ Services will be available at:
 4. **Generation** - Retrieved context + user query sent to LLM for answer generation
 5. **Response** - AI responds with answer and source citations
 
-## 📊 Data Sources
-
-Currently ingesting from:
-- Select fitness-science Youtube Channels
-- Research papers (PubMed)
-- Fitness textbooks
-
-## 🚧 Roadmap
+## TBD
 
 - [ ] Web and Mobile app frontend
 - [ ] Advanced analytics and progress statistics
@@ -127,15 +120,6 @@ Currently ingesting from:
 - [ ] Integration with fitness trackers (Apple Health, Google Fit)
 - [ ] Community features and workout sharing
 
-## 📝 License
 
 Copyright © 2025. All rights reserved.
-
-## 📧 Contact
-
 For inquiries, contact: yp.victor@outlook.com
-
----
-
-**Note:** This project is under active development. Features and documentation may change.
-
