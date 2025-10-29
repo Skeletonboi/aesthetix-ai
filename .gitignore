@@ -2,8 +2,11 @@
 __pycache__/
 .pytest_cache/
 
-# Temp files
+# Temp and test files
 backend/test.py
+backend/src/rag/test_main.py
+backend/src/rag/test.py
+backend/src/ingestion/test.py
 
 # Env
 backend/mock_env/
