@@ -4,7 +4,7 @@ import uuid
 class RAGRequest(BaseModel):
     msg: str
 
-class RAGInternalRequest(ChatRequest):
+class RAGInternalRequest(RAGRequest):
     user_uid: uuid.UUID
 
 class RAGSingleResponse(BaseModel):
