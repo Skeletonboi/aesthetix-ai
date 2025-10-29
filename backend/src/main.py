@@ -5,7 +5,7 @@ from src.workout_logs.routes import workout_logs_router
 from src.exercise.routes import exercise_router
 from src.auth.routes import auth_router
 from src.tags.routes import tag_router
-from src.chat.routes import chat_router
+from src.rag.routes import rag_router
 from src.db.db import init_db, get_session_context
 from src.exercise.service import ExerciseService
 from src.workout_logs.service import WorkoutLogService
@@ -95,4 +95,4 @@ app.include_router(workout_logs_router, prefix=f"{version_prefix}/workout_log", 
 app.include_router(exercise_router, prefix=f"{version_prefix}/exercise", tags=['exercises'])
 app.include_router(auth_router, prefix=f"{version_prefix}/user", tags=['users'])
 app.include_router(tag_router, prefix=f"{version_prefix}/tag", tags=["tags"])
-app.include_router(chat_router, prefix=f"{version_prefix}/chat", tags=["chat"])
+app.include_router(rag_router, prefix=f"{version_prefix}/rag", tags=["rag"])
