@@ -36,13 +36,13 @@ class Retriever():
         for query in queries:
             yt_res = collection_yt.query(query_texts=[f"Instruct: Find relevant documents \n Query: {query}"], n_results=n_yt_res)
             chunks['transcript_chunks'].extend(
-                [{'chunk': doc, 'title': metadata['title'], 'vid_id': metadata['vid_id']} 
-                for doc, metadata in zip(yt_res['documents'][0], yt_res['metadatas'][0])]
+                [{'chunk': doc, 'title': metadata['title'], 'vid_id': metadata['vid_id'], 'distance': dist} 
+                for doc, metadata, dist in zip(yt_res['documents'][0], yt_res['metadatas'][0], yt_res['distances'][0])]
                 )
             txtbk_res = collection_txtbk.query(query_texts=[f"Instruct: Find relevant documents \n Query: {query}"], n_results=n_txtbk_res)
             chunks['txtbk_chunks'].extend(
-                [{'chunk': doc, 'title': metadata['source_title'], 'header': metadata['Header_2']} 
-                for doc, metadata in zip(txtbk_res['documents'][0], txtbk_res['metadatas'][0])]
+                [{'chunk': doc, 'title': metadata['source_title'], 'header': metadata['Header_2'], 'distance': dist} 
+                for doc, metadata, dist in zip(txtbk_res['documents'][0], txtbk_res['metadatas'][0], txtbk_res['distances'][0])]
                 )
 
         return chunks
@@ -51,7 +51,7 @@ class Retriever():
     def retrieve_exa_papers(queries: List[str], n_results=10):
         results = []
         for query in queries:
-            response = ResourcePool.exa.search_and_contents(
+            response = ResourcePool.exa_client.search_and_contents(
             query.strip(),
             type = "auto",
             category = "research paper",

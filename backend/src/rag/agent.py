@@ -39,6 +39,7 @@ class Agent():
     WRONG: "[actual answer] ... If you want I can create a 4 week program outline ..."
     RIGHT: "[actual answer with no further inquiry]"
     """
+    CHAT_HISTORY_MAX = 10   
 
     def __init__(self):
         # Assign shared agent resource(s)
@@ -46,39 +47,79 @@ class Agent():
         self.graph_builder = StateGraph(MessagesState)
         self.graph = self.build_graph()
 
-    async def gen_retrieval_queries(self, messages, n_research_max=1, n_embed_max=1, chat_history_max=10):
+    async def gen_retrieval_queries(
+        self, 
+        context_str: str, 
+        n_research_max=1, 
+        n_embed_max=1, 
+        ):
         """
-        Generates queries for research paper search engine querying and transcript summary embedding retrieval respectively
+        Optimizes user query intentions for research paper search engine querying and transcript summary embedding retrieval respectively
         """
-
-        messages_str = "\n".join([f"{msg.type}: {msg.content}" for msg in messages[-chat_history_max:]])
-        research_query_prompt = f"""You are a fitness-science research professional exercise physiology and personal training.  
-        Your task: given the chat history and user biometric data below, produce up to {n_research_max} <RESEARCH QUERY> strings optimized to query a scientific paper search engine (Semantic Scholar) and up to {n_embed_max} <EMBEDDING QUERY> strings optimized for vector similarity retrieval from fitness textbooks and video-summary text.  
-
-        OUTPUT RULES (strict):
-        - Output ONLY lines that begin with <RESEARCH QUERY> or <EMBEDDING QUERY> followed by a single query string.
-        - Produce at least one <RESEARCH QUERY> and one <EMBEDDING QUERY> (unless the corresponding max is 0).
-        - Do not exceed {n_research_max} <RESEARCH QUERY> lines or {n_embed_max} <EMBEDDING QUERY> lines.
-        - Embedding queries should read like natural language phrases in a textbook or transcript regarding the topic.
-        - Avoid generic filler in the embedding query (it hurts model sensitivity and recall very much), and try to include the most relevant noun as the last token (due to the embedding model's last token pooling). 
-
-        GUIDANCE FOR QUERY CONTENT:
-        - Research queries: derive specific muscles, exercises, demographics, or outcomes in scientific language. Utilize only scientifically relevant terms when referring to the physiological body part and phenomenon where applicable. Quotations for exact phrase matching if needed.
-        - Embedding queries: create natural-language phrases likely to appear in textbooks or coaching/transcript summaries (exercise execution, coaching cues, technique, programming guidelines, physiological explanations). Avoid using the literal words "textbook" or "transcript" as they obviously won't show up within one.
-        - Tailoring: consider any outstanding details from the user data (age, sex, training history, goals)
-
-        EXPECTED FORMAT (for 2 per):
-        <RESEARCH QUERY> research query 1
-        <RESEARCH QUERY> research query 2
-        <EMBEDDING QUERY> embedding query 1
-        <EMBEDDING QUERY> embedding query 2
-
-        User Data: \n {self.user_data}
         
-        Messages: \n {messages_str}
+        query_prompt = f"""
+        Based on the user's intention from the provided user context, generate {n_research_max} research paper queries and {n_embed_max} embedding 
+        queries that will be used for embedding-based vector similarity retrieval from fitness-science video transcripts, research papers, and textbooks.
+
+        KEY DIFFERENCES:
+        1. RESEARCH QUERIES: Scientific terminology for academic papers (e.g., "quadricep", "hypertrophic adaptations")
+        2. EMBEDDING QUERIES: Natural coaching language matching video transcript/textbook style
+
+        CORE PRINCIPLES:
+        1. PRESERVE INTENT & SCOPE - Do not change what the user is asking about or narrow their question. Do NOT interject your own expertise. Do not make assumptions about specific exercises or methodologies.
+        2. ADD SEMANTIC CONTEXT - Include related terminology that appears in fitness content without altering meaning
+        3. MAINTAIN SPECIFICITY - If they ask broadly, keep it broad; if specific, keep it specific
+        4. USE NATURAL LANGUAGE - Match how fitness coaches and educators actually speak
+        5. END WITH SEARCH KEYWORDS - Last token pooling in embedding model carries more weight 
+
+        OUTPUT FORMAT (strict):
+        <RESEARCH QUERY> query text here
+        <EMBEDDING QUERY> query text here
+
+        EMBEDDING QUERY OPTIMIZATION GUIDELINES:
+        1. EXPAND WITH SEMANTIC RICHNESS
+        Add context words that commonly co-occur in fitness content without changing the scope.
+        
+        User Query: "chest exercises"
+        Bad: "advanced chest exercises for bodybuilders" ❌ (narrowed scope - added "advanced" and "bodybuilders")
+        Good: "exercises and training methods for chest" ✓ (same scope, added retrievable context, last token keyword)
+
+        2. CLARIFY IMPLICIT CONTEXT
+        If the query's purpose is clear, make it explicit for better matching.
+        
+        User Query: "how much protein do I need?"
+        Bad: "optimal protein intake timing and amount" ❌ (added timing specificity that the user didn't ask for)
+        Good: "optimal amount of required protein" ✓ (clarified likely context without narrowing, last token keyword)
+
+        3. USE COMPLETE CONCEPTS
+        Transform technical terms or abbreviations into full phrases that appear in educational content.
+        
+        User Query: "best ROM"
+        Bad: "range of motion benefits" ❌ (not specifically matching best suggestions, vague)
+        Good: "exercise best range of motion" ✓ (expanded abbreviation with minimal context, last token keywords)
+
+        4. TRANSFORM KEYWORDS TO FITNESS DOMAIN TERMINOLOGY
+        Include fitness-specific synonyms and related terms that help vector matching.
+        Be careful here not to randomly interject concepts that the user did not specify.
+        
+        User Query: "getting stronger"
+        Bad: "progressive overload for strength" ❌ (injected specific methodology)
+        Bad: "optimal hypertrophy exercises" ❌ (falsely assumed strength is always tied to hypertrophy)
+        Bad: "increasing strength on barbell press" ❌ (interjected specific exercise suggestion)
+        Good: "increasing performance and building strength" ✓ (added domain terms, same scope)
+
+        RESEARCH QUERY GUIDELINES:
+        - Use scientific/Latin terminology: "quadricep activation" not "quad engagement"
+        - Include measurable outcomes: "1RM strength gains"
+        - Target specific research areas: "concentric versus eccentric range of motion"
+        - Use quotes for exact phrases if needed: "resistance training frequency"
+
+        IMPORTANT: Preserve the user's original intent and scope. Add specificity and context, but don't narrow their question or inject domain expertise they didn't ask for.
+
+        Context: {context_str}
         """
 
-        response = await self.llm.ainvoke(research_query_prompt)
+        response = await self.llm.ainvoke(query_prompt)
         research_queries = re.findall(r"<RESEARCH QUERY>\s*(.+)", response.content)
         embedding_queries = re.findall(r"<EMBEDDING QUERY>\s*(.+)", response.content)
 
@@ -92,7 +133,9 @@ class Agent():
         
         # Retrieve context
         print("Generating research queries PENGU")
-        research_queries, embedding_queries = await self.gen_retrieval_queries(state['messages'])
+        context_str = "\n".join([f"{msg.type}: {msg.content}" for msg in state['messages'][-self.CHAT_HISTORY_MAX:]])
+
+        research_queries, embedding_queries = await self.gen_retrieval_queries(context_str)
         print(f"Research Queries: {research_queries} \n Embedding queries: {embedding_queries}")
         print("Retrieving embedded chunks PENGU")
         chunks = Retriever.retrieve_embedded_chunks(embedding_queries)
