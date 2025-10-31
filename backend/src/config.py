@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 Config = Settings()
 
 if not os.path.isabs(Config.CHROMA_VDB_PATH):
-    Config.CHROMA_VDB_PATH = os.path.abspath(Config.CHROMA_VDB_PATH)
+    Config.CHROMA_VDB_PATH = os.path.join(root_dir, Config.CHROMA_VDB_PATH)
 
 if not os.path.isabs(Config.TRANSCRIPT_PATH):
-    Config.TRANSCRIPT_PATH = os.path.abspath(Config.TRANSCRIPT_PATH)
+    Config.TRANSCRIPT_PATH = os.path.join(root_dir, Config.TRANSCRIPT_PATH)
