@@ -32,6 +32,7 @@ class User(BaseModel):
     role = Column(VARCHAR, nullable=False, server_default="user")
 
     logs = relationship("WorkoutLog", back_populates="user", lazy="selectin")
+    search_results = relationship("ResearchResult", back_populates="user", lazy="selectin")
 
     def __repr__(self) -> str:
         return f"User {self.username}"
