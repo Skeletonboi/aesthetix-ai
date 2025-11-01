@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, String, Text, func
+from sqlalchemy import Column, DateTime, String, Text, func, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from uuid import uuid4
@@ -9,7 +9,7 @@ class ResearchResult():
     __tablename__ = "research_results"
 
     result_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_uid = Column(UUID(as_uuid=True), nullable=True, index=True)
+    user_uid = Column(UUID(as_uuid=True), ForeignKey("user_accounts.uid"), nullable=True, index=True)
     user_query = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=False), server_default=func.current_timestamp())
 
