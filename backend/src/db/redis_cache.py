@@ -21,6 +21,6 @@ async def token_in_blocklist(jti: str) -> bool:
 async def cache_research_response(result_id: str, research_result_str: str):
     await redis_client.set(f"research:{result_id}", research_result_str)
 
-async def get_research_response(result_id: str):
+async def get_cached_research_response(result_id: str):
     res = await redis_client.get(f"research:{result_id}")
     return None if not res else res
