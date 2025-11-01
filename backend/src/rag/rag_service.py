@@ -1,12 +1,14 @@
-from uuid import UUID
+import uuid
 import json
 from langchain_core.messages import SystemMessage, HumanMessage
 import logging
+import re
 
 from src.rag.agent import Agent
 from src.rag.retriever import Retriever
 from src.rag.resource_pool import ResourcePool
-
+from src.rag.schemas import ResearchResultFull
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +39,11 @@ class RAGService():
 
         return final_msg
     
-    async def generate_research(self, query: str):
+    async def generate_research(self, query: str) -> ResearchResultFull:
         research_queries, embedding_queries = await self.agent.gen_retrieval_queries(query)
         chunks = Retriever.retrieve_embedded_chunks(embedding_queries)
         # papers = Retriever.retrieve_exa_papers(research_queries)
-        import code; code.interact(local=locals())
+
         ts_str = ""
         for i, chunk in enumerate(chunks['transcript_chunks']):
             ts_str += f"<SUMMARY {i+1}> \n Title: {chunk['title']} \n Summary: {chunk['chunk']} \n\n"
@@ -72,5 +74,22 @@ class RAGService():
         {ts_str}
         """
         res = await ResourcePool.llm_chat_model.ainvoke(prompt)
-        
-        return res, prompt, embedding_queries, chunks
+        pattern = r'\d+\.\n(.+?)(?=\n\d+\.|\Z)'
+        llm_chunk_responses = re.findall(pattern, res.content, re.DOTALL)
+        llm_chunk_responses = [s.strip() for s in llm_chunk_responses]
+
+        research_obj = ResearchResultFull(
+            result_id = str(uuid.uuid4()),
+            user_uid = None,
+            user_query = query,
+            created_at = datetime.now(),
+            research_queries = research_queries,
+            embedding_queries = embedding_queries,
+            transcript_chunks = chunks['transcript_chunks'],
+            txtbk_chunks = chunks['txtbk_chunks'],
+            research_papers=None,
+            llm_chunk_response=llm_chunk_responses,
+            llm_final_response=None
+        )
+
+        return research_obj

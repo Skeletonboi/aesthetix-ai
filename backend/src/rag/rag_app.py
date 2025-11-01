@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, status
 
 from src.auth.dependencies import AccessTokenBearer
-from src.rag.schemas import RAGSingleResponse, RAGInternalRequest
+from src.rag.schemas import RAGRequest, RAGSingleResponse, RAGInternalRequest, ResearchResultFull
 from src.rag.rag_service import RAGService
 from src.rag.resource_pool import ResourcePool
 
@@ -23,4 +23,11 @@ async def _full_single_response(
     )
     return RAGSingleResponse(ai_msg=ai_msg)
 
-# @chat_app.post("/ ")
+@rag_app.post("/_generate_research", response_model=ResearchResultFull)
+async def _generate_research(
+    rag_request: RAGRequest,
+):
+    research_result = await rag_service.generate_research(
+        rag_request.msg
+    )
+    return research_result
