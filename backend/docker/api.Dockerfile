@@ -8,4 +8,4 @@ COPY ./migrations /repo/migrations
 COPY ./alembic.ini /repo/alembic.ini
 COPY ./src /repo/src
 
-CMD ["fastapi", "dev", "/repo/src/main.py", "--port", "8000"]
+CMD ["fastapi", "dev", "/repo/src/main.py", "--port", "8000", "--host", "0.0.0.0"]
