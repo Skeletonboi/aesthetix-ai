@@ -40,6 +40,7 @@ async def get_research_by_id(
     token_details: dict = Depends(access_token_bearer)
 ):
     res = await research_service.get_research_by_result_id(result_id, session)
+    return res
 
 @rag_router.get("/research/all", response_model=list[ResearchResultHistoryItem])
 async def get_all_user_research_history(
