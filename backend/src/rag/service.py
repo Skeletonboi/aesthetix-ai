@@ -8,7 +8,7 @@ import httpx
 from src.rag.models import ResearchResult
 from src.db.redis_cache import cache_research_response, get_cached_research_response
 from src.config import Config
-from src.rag.schemas import RAGRequest
+from src.rag.schemas import RAGRequest, ResearchResultHistoryItem
 
 class ResearchService:
     async def get_all_user_research_history(self, user_uid: UUID, session: AsyncSession, limit=50):
@@ -22,7 +22,11 @@ class ResearchService:
             .limit(limit)
         res = await session.execute(stmnt)
 
-        return res.all()
+        res_dic = [
+            ResearchResultHistoryItem.model_validate(row, from_attributes=True)
+            for row in res.all()]
+
+        return res_dic
 
     async def get_research_by_result_id(self, result_id: UUID, session: AsyncSession):
         # Ping cache first
