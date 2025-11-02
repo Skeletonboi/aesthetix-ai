@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from src.db.base_model import BaseModel
 
-class ResearchResult():
+class ResearchResult(BaseModel):
     __tablename__ = "research_results"
 
     result_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
