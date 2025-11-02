@@ -11,4 +11,4 @@ COPY ./migrations /repo/migrations
 COPY ./alembic.ini /repo/alembic.ini
 COPY ./src /repo/src
 
-CMD ["fastapi", "dev", "/repo/src/chat/chat_app.py", "--port", "8001"]
+CMD ["fastapi", "dev", "/repo/src/rag/rag_app.py", "--port", "8001"]
