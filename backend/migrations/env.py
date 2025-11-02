@@ -11,6 +11,7 @@ from src.db.base_model import BaseModel
 from src.exercise.models import Exercise
 from src.workout_logs.models import WorkoutLog
 from src.auth.models import User
+from src.rag.models import ResearchResult
 
 database_url = Config.DATABASE_URL
 
