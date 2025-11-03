@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/v1
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules\
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+
+volumes:
+  frontend-node-modules:
+

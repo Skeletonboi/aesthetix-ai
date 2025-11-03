@@ -4,7 +4,7 @@ services:
   api:
     image: api_service
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - REDIS_HOST=redis
       - ML_SERVICE_ENDPOINT=http://ml:8001
@@ -13,16 +13,16 @@ services:
     networks:
       - backend-network
     volumes:
-      - ./data:/repo/data
-      - ./src:/repo/src
-      - ./migrations:/repo/migrations
-      - ./alembic.ini:/repo/alembic.ini
-  
+      - ./backend/data:/repo/data
+      - ./backend/src:/repo/src
+      - ./backend/migrations:/repo/migrations
+      - ./backend/alembic.ini:/repo/alembic.ini
+
   ml:
     image: ml_service
     runtime: nvidia
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - REDIS_HOST=redis
       - CHROMA_VDB_PATH=/repo/data/chroma_db
@@ -32,11 +32,11 @@ services:
     networks:
       - backend-network
     volumes:
-      - ./data:/repo/data
-      - ./src:/repo/src
-      - ./migrations:/repo/migrations
-      - ./alembic.ini:/repo/alembic.ini
-  
+      - ./backend/data:/repo/data
+      - ./backend/src:/repo/src
+      - ./backend/migrations:/repo/migrations
+      - ./backend/alembic.ini:/repo/alembic.ini
+
   redis:
     image: redis:7-alpine
     ports:
@@ -44,7 +44,8 @@ services:
     networks:
       - backend-network
     volumes:
-      - ./data/redis-cache:/data
+      - ./backend/data/redis-cache:/data
 
 networks:
   backend-network:
+
