@@ -8,7 +8,7 @@ from src.rag.agent import Agent
 from src.rag.retriever import Retriever
 from src.rag.resource_pool import ResourcePool
 from src.rag.schemas import ResearchResultFull
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,10 @@ class RAGService():
         # paper_str = f"Research Paper Summaries: \n {json.dumps(papers)}"
         prompt = f"""
         Given the following user query, generate an answer to the user query using only the information from each of the retrieved 
-        fitness science video transcript summaries.
+        fitness science video transcript summaries. One answer per summary using only the information from each summary.
+        Then at the end, generate a <FINAL ANSWER> output that synthesizes a correct 
+        answer given ALL of the summaries and the insights extracted from them.
+
         Each video summary in the list MUST be assessed independently, NO information from any of the other retrieved summaries 
         may be used to generate the answer for a respective video.
         Do not interject your own opinion. 
@@ -59,14 +62,17 @@ class RAGService():
         to the user query in the summary). If no relevant information exists, indicate as such. 
         Always refer to the summary as a "video".
 
-        Output your answer in a list delimited by a newline character.
+        Output your answer in the strict format below:
 
-        EXAMPLE:
-        1.
-        <ANSWER FROM SUMMARY 1>
-        2.
-        <ANSWER FROM SUMMARY 2>
+        <SUMMARY 1>
+        ... answer from summary 1 ...
+        <SUMMARY 2>
+        ... answer from summary 2 ...
         ...
+        <FINAL ANSWER>
+        ... your final answer ...
+
+        Here are the provided user query and summaries:
 
         Query: {query}
 
@@ -74,22 +80,24 @@ class RAGService():
         {ts_str}
         """
         res = await ResourcePool.llm_chat_model.ainvoke(prompt)
-        pattern = r'\d+\.\n(.+?)(?=\n\d+\.|\Z)'
-        llm_chunk_responses = re.findall(pattern, res.content, re.DOTALL)
-        llm_chunk_responses = [s.strip() for s in llm_chunk_responses]
+        summaries_pattern = r'<SUMMARY\s+\d+>\s*(.*?)(?=(?:<SUMMARY\s+\d+>|<FINAL ANSWER>|$))'
+        llm_chunk_responses = [s.strip() for s in re.findall(summaries_pattern, res.content, re.DOTALL)]
+
+        final_answer_match = re.search(r'<FINAL ANSWER>\s*(.*)', res.content, re.DOTALL)
+        llm_final_response = final_answer_match.group(1).strip() if final_answer_match else None
 
         research_obj = ResearchResultFull(
             result_id = str(uuid.uuid4()),
             user_uid = None,
             user_query = query,
-            created_at = datetime.now(),
+            created_at = None,
             research_queries = research_queries,
             embedding_queries = embedding_queries,
             transcript_chunks = chunks['transcript_chunks'],
             txtbk_chunks = chunks['txtbk_chunks'],
             research_papers=None,
             llm_chunk_response=llm_chunk_responses,
-            llm_final_response=None
+            llm_final_response=llm_final_response
         )
 
         return research_obj
