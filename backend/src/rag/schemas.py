@@ -15,7 +15,7 @@ class ResearchResultFull(BaseModel):
     result_id: UUID
     user_uid: UUID | None = None
     user_query: str
-    created_at: datetime
+    created_at: datetime | None = None
     
     research_queries: list[str] | None = None
     embedding_queries: list[str] | None = None
