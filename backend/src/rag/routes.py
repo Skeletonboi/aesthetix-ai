@@ -62,3 +62,14 @@ async def generate_new_research(
     res = await research_service.generate_new_research(rag_request, user_uid, session)
 
     return res
+
+@rag_router.delete("/research/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_research_result(
+    id: UUID,
+    session: AsyncSession = Depends(get_session),
+    token_details: dict = Depends(access_token_bearer)
+):
+    user_uid = UUID(token_details['user']['uid'])
+    _ = await research_service.delete_research_result(user_uid, id, session)
+
+    return

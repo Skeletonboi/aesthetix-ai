@@ -1,10 +1,11 @@
+from http.client import HTTPException
 from unittest import result
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 import json
 import httpx
-from datetime import datetime
+from fastapi import status
 
 from src.rag.models import ResearchResult
 from src.db.redis_cache import cache_research_response, get_cached_research_response
@@ -58,3 +59,20 @@ class ResearchService:
         await session.refresh(new_research_res)
 
         return res_json
+
+    async def delete_research_result(self, user_uid: UUID, result_id: UUID, session: AsyncSession):
+        stmnt = select(ResearchResult).where(ResearchResult.result_id == result_id)
+        res = await session.execute(stmnt)
+        research_result = res.scalars().first()
+
+        if not research_result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                detail="Research result not found.")
+        elif research_result.user_uid != user_uid:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Attempted to delete another user's research result!")
+
+        await session.delete(research_result)
+        await session.commit()
+
+        return
