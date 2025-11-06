@@ -42,21 +42,25 @@ class RAGService():
     async def generate_research(self, query: str) -> ResearchResultFull:
         research_queries, embedding_queries = await self.agent.gen_retrieval_queries(query)
         chunks = Retriever.retrieve_embedded_chunks(embedding_queries)
-        # papers = Retriever.retrieve_exa_papers(research_queries)
+        papers = Retriever.retrieve_exa_papers(research_queries)
 
         ts_str = ""
         for i, chunk in enumerate(chunks['transcript_chunks']):
             ts_str += f"<SUMMARY {i+1}> \n Title: {chunk['title']} \n Summary: {chunk['chunk']} \n\n"
         # txtbk_str = f"Textbook Chunks: \n {json.dumps(chunks['txtbk_chunks'])}"
-        # paper_str = f"Research Paper Summaries: \n {json.dumps(papers)}"
+        paper_str = f"Research Paper Summaries: \n {json.dumps(papers)}"
         prompt = f"""
-        Given the following user query, generate an answer to the user query using only the information from each of the retrieved 
-        fitness science video transcript summaries. One answer per summary using only the information from each summary.
-        Then at the end, generate a <FINAL ANSWER> output that synthesizes a correct 
-        answer given ALL of the summaries and the insights extracted from them.
+        Given the following user query, retrieved video summaries, and research papers, generate a scientifically-vetted
+        answer to the user query using only the information from each of the retrieved fitness science video transcript summaries. 
+        Use the information from the research papers to assess the truthfulness of each video summary, and then extract what is 
+        scientifically true from each summary. 
+        
+        Then at the end, generate a <FINAL ANSWER> output in markdown that synthesizes a correct answer given ALL of the summaries 
+        and the scientific insights extracted from the summaries. Format the final answer to be easy-to-read, concise while including all pertinent 
+        information, with most important takeaways first and/or highlighted.
 
         Each video summary in the list MUST be assessed independently, NO information from any of the other retrieved summaries 
-        may be used to generate the answer for a respective video.
+        may be used to generate the answer for a respective video. Only additional information from the research papers is allowed.
         Do not interject your own opinion. 
         Reason and assess the video summary to understand what the actual recommendation made is (if there exists information pertaining 
         to the user query in the summary). If no relevant information exists, indicate as such. 
@@ -70,14 +74,18 @@ class RAGService():
         ... answer from summary 2 ...
         ...
         <FINAL ANSWER>
-        ... your final answer ...
+        ... your final answer in markdown formatted nicely ...
 
         Here are the provided user query and summaries:
 
-        Query: {query}
+        Query: 
+        {query}
 
         Summaries:
         {ts_str}
+
+        Research Papers:
+        {paper_str}
         """
         res = await ResourcePool.llm_chat_model.ainvoke(prompt)
         summaries_pattern = r'<SUMMARY\s+\d+>\s*(.*?)(?=(?:<SUMMARY\s+\d+>|<FINAL ANSWER>|$))'
@@ -95,7 +103,7 @@ class RAGService():
             embedding_queries = embedding_queries,
             transcript_chunks = chunks['transcript_chunks'],
             txtbk_chunks = chunks['txtbk_chunks'],
-            research_papers=None,
+            research_papers=papers,
             llm_chunk_response=llm_chunk_responses,
             llm_final_response=llm_final_response
         )
