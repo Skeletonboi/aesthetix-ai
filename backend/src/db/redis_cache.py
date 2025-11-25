@@ -24,3 +24,14 @@ async def cache_research_response(result_id: str, research_result_str: str):
 async def get_cached_research_response(result_id: str):
     res = await redis_client.get(f"research:{result_id}")
     return None if not res else res
+
+async def add_temp_login_response(temp_auth_code: str, login_response_serialized: str):
+    await redis_client.set(f"auth:{temp_auth_code}", login_response_serialized)
+
+async def get_temp_login_response(temp_auth_code: str):
+    res = await redis_client.get(f"auth:{temp_auth_code}")
+    return None if not res else res
+
+async def delete_temp_login_response(temp_auth_code: str):
+    _ = await redis_client.delete(f"auth:{temp_auth_code}")
+    return
