@@ -12,3 +12,4 @@ pytest==8.3.5
 pytest_asyncio==0.21.1
 redis==7.0.0
 SQLAlchemy==2.0.44
+authlib

@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     CHROMA_VDB_PATH: str
     TRANSCRIPT_PATH: str
     ML_SERVICE_ENDPOINT: str
+    FRONTEND_URL: str
+
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(root_dir, ".env"),
