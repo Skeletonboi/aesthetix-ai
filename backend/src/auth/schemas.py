@@ -2,8 +2,9 @@ from multiprocessing import Value
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from datetime import datetime
 import uuid
+from src.auth.models import HeightUnit, AccountCreationType
 
-EMAIL_MAX_LEN = 40
+EMAIL_MAX_LEN = 99
 PASSWORD_MIN_LEN = 6
 
 class UserBase(BaseModel):
@@ -26,15 +27,16 @@ class UserBase(BaseModel):
     full_name : str | None # ^
 
 class UserCreate(BaseModel):
-    username: str = Field(max_length=24)
-    first_name: str = Field(max_length=25)
-    last_name: str = Field(max_length=25)
-    email: str = Field(max_length=EMAIL_MAX_LEN)
-    password: str = Field(min_length=PASSWORD_MIN_LEN)
-    birth_month: int = Field(ge=1, le=12)
-    birth_year: int = Field(ge=1900, le=datetime.now().year)
-    height_raw : float = Field(ge=0)
-    height_unit : str # Strictly either "CENTIMETERS" or "INCHES", represented in SQLAlchemy as SQLEnum
+    username: str = Field(max_length=EMAIL_MAX_LEN)
+    first_name: str = Field(max_length=99)
+    last_name: str = Field(max_length=99)
+    email: str = Field(max_length=99)
+    password: str | None = Field(default=None, min_length=PASSWORD_MIN_LEN)
+    birth_month: int | None = Field(default=None, ge=1, le=12)
+    birth_year: int | None = Field(default=None, le=datetime.now().year)
+    height_raw : float | None = Field(default=None, ge=0)
+    height_unit : str | None # Strictly either "CENTIMETERS" or "INCHES", represented in SQLAlchemy as SQLEnum
+    account_creation_type : str
 
     model_config = {
     "json_schema_extra": {
@@ -48,12 +50,14 @@ class UserCreate(BaseModel):
             "birth_year" : 1999,
             "height_raw" : 187,
             "height_unit" : "CENTIMETERS",
+            "account_creation_type" : "CUSTOM"
         }
     }}
 
     @field_validator('height_unit', mode='before')
-    def validate_unit(cls, val: str) -> str:
-        if (val != "CENTIMETERS") and (val != "INCHES"):
+    def validate_unit(cls, val: str) -> str | None:
+        valid_fields = set(field.name for field in HeightUnit)
+        if val and val not in valid_fields:
             raise ValueError("Improper metric, units must be either 'CENTIMETERS' or 'INCHES'")
         return val
 
@@ -78,6 +82,10 @@ class UserUpdate(BaseModel):
 
     @field_validator('height_unit', mode='before')
     def validate_unit(cls, val: str) -> str | None:
-        if val and (val != "CENTIMETERS") and (val != "INCHES"):
+        valid_fields = set(field.name for field in HeightUnit)
+        if val and val not in valid_fields:
             raise ValueError("Improper metric, units must be either 'CENTIMETERS' or 'INCHES'")
         return val
+
+class ExchangeData(BaseModel):
+    exchange_code: str

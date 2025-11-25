@@ -12,6 +12,10 @@ class HeightUnit(Enum):
     CENTIMETERS = "cm" 
     INCHES = "in"
 
+class AccountCreationType(Enum):
+    CUSTOM = 0
+    GOOGLE = 1
+
 class User(BaseModel):
     __tablename__ = "user_accounts"
 
@@ -22,12 +26,13 @@ class User(BaseModel):
     last_name = Column(String, nullable=True)
     is_verified = Column(Boolean, nullable=False, default=False)
     email = Column(String, nullable=False, unique=True)
-    password_hash = Column(String, nullable=False)
+    password_hash = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=False), server_default=func.current_timestamp())
     birth_month = Column(Integer, nullable=True)
     birth_year = Column(Integer, nullable=True)
     height_raw = Column(Float, nullable=True)
     height_unit = Column(SQLEnum(HeightUnit), nullable=True)
+    account_creation_type = Column(SQLEnum(AccountCreationType), nullable=False)
 
     role = Column(VARCHAR, nullable=False, server_default="user")
 
