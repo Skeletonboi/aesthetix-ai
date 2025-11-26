@@ -1,6 +1,7 @@
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from src.workout_logs.routes import workout_logs_router
 from src.exercise.routes import exercise_router
 from src.auth.routes import auth_router
@@ -15,6 +16,7 @@ from src.exercise.schemas import ExerciseCreate
 from src.workout_logs.schemas import WorkoutLogCreate, WorkoutLogUpdate
 from src.auth.schemas import UserCreate
 from src.tags.schemas import TagCreate
+from src.config import Config
 from contextlib import asynccontextmanager
 import json
 import os
@@ -89,6 +91,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=Config.SESSION_SECRET_KEY
 )
 
 app.include_router(workout_logs_router, prefix=f"{version_prefix}/workout_log", tags=['workout_logs'])
