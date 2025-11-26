@@ -35,7 +35,7 @@ class UserCreate(BaseModel):
     birth_month: int | None = Field(default=None, ge=1, le=12)
     birth_year: int | None = Field(default=None, le=datetime.now().year)
     height_raw : float | None = Field(default=None, ge=0)
-    height_unit : str | None # Strictly either "CENTIMETERS" or "INCHES", represented in SQLAlchemy as SQLEnum
+    height_unit : str | None = None # Strictly either "CENTIMETERS" or "INCHES", represented in SQLAlchemy as SQLEnum
     account_creation_type : str
 
     model_config = {
@@ -73,8 +73,8 @@ class UserUpdate(BaseModel):
     username: str | None = Field(default=None, max_length=24)
     first_name: str | None = Field(default=None, max_length=25)
     last_name: str | None = Field(default=None, max_length=25)
-    email: str | None = Field(default=None, max_length=EMAIL_MAX_LEN)
-    password: str | None = Field(default=None, min_length=PASSWORD_MIN_LEN)
+    email: str = Field(max_length=EMAIL_MAX_LEN)
+    password: str = Field(min_length=PASSWORD_MIN_LEN)
     birth_month: int | None = Field(default=None, ge=1, le=12)
     birth_year: int | None = Field(default=None, ge=1900, le=datetime.now().year)
     height_raw : float | None = Field(default=None, ge=0)
@@ -88,4 +88,4 @@ class UserUpdate(BaseModel):
         return val
 
 class ExchangeData(BaseModel):
-    exchange_code: str
+    code: str

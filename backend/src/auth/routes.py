@@ -167,7 +167,7 @@ async def google_oauth_callback(
             first_name=first_name,
             last_name=last_name,
             email=email,
-            password="",
+            password=secrets.token_urlsafe(16),
             account_creation_type="GOOGLE"
         )
         user = await user_service.create_user(user_data, session)

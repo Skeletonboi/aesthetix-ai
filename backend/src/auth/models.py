@@ -26,7 +26,7 @@ class User(BaseModel):
     last_name = Column(String, nullable=True)
     is_verified = Column(Boolean, nullable=False, default=False)
     email = Column(String, nullable=False, unique=True)
-    password_hash = Column(String, nullable=True)
+    password_hash = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=False), server_default=func.current_timestamp())
     birth_month = Column(Integer, nullable=True)
     birth_year = Column(Integer, nullable=True)
@@ -68,12 +68,13 @@ class User(BaseModel):
 
     @validates("birth_month", "birth_year")
     def validate_birth_month_year(self, key, val):
-        if key == 'birth_month':
-            if val < 1 or val > 12:
-                raise ValueError("Invalid birth_month")
-        elif key == 'birth_year':
-            if val < 1900 or val > datetime.now().year:
-                raise ValueError("Invalid birth year")
+        if val:
+            if key == 'birth_month':
+                if val < 1 or val > 12:
+                    raise ValueError("Invalid birth_month")
+            elif key == 'birth_year':
+                if val < 1900 or val > datetime.now().year:
+                    raise ValueError("Invalid birth year")
         return val
 
     @hybrid_property
