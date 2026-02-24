@@ -7,7 +7,7 @@ from uuid import uuid4
 exercise_tags = Table(
     "exercise_tags",
     BaseModel.metadata,
-    Column("eid", UUID(as_uuid=True), ForeignKey("exercises.eid"), primary_key=True, server_default="sa.text."),
+    Column("eid", UUID(as_uuid=True), ForeignKey("exercises.eid"), primary_key=True),
     Column("tid", UUID(as_uuid=True), ForeignKey("tags.tid"), primary_key=True),
 )
 
