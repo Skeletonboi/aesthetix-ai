@@ -8,6 +8,13 @@ from httpx import ASGITransport, AsyncClient
 import os
 import json
 
+# Using httpx for async route testing, using an ASGI transport to connect the async client to an ASGI 
+# app backend (or WSGI too i.e. for Flask/Django apps)
+# 
+# For DB related tests, we will use a custom get_session that will flush and rollback upon closing, and
+# it will override all get_session dependencies in the app.
+# Alternatively, you *could* use an in-mem DB (sqlite in-mem), or spin-up a separate test DB url.
+
 base_dir = os.path.dirname(os.path.abspath(__file__))
 SEED_DATA_PATH = os.path.join(base_dir, "seed_data.json")
 
