@@ -50,7 +50,8 @@
             "birth_year" : 1999,
             "birth_month" : 9,
             "height_raw" : 187,
-            "height_unit" : "CENTIMETERS"
+            "height_unit" : "CENTIMETERS",
+            "account_creation_type" : "CUSTOM"
         }
     ],
     "seed_tags" : [

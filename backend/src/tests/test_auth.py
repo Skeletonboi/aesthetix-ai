@@ -15,7 +15,8 @@ async def test_user_signup(temp_client: AsyncClient):
         "birth_month" : 1,
         "birth_year" : 2000,
         "height_raw" : 187,
-        "height_unit" : "CENTIMETERS"
+        "height_unit" : "CENTIMETERS",
+        "account_creation_type" : "CUSTOM"
         }
     response = await temp_client.post("/v1/user/signup", json=test_user_data)
     user = response.json()
