@@ -29,7 +29,7 @@ class UserService:
         session.add(new_user)
         await session.commit()
         
-        await session.refresh(new_user) # Why do I need this here but not in other table creates
+        await session.refresh(new_user) # Needs to be refreshed to update db-generated fields i.e. ids date fields
 
         return new_user
 
