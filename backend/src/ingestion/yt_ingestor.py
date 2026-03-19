@@ -8,7 +8,6 @@ from typing import List
 import asyncio
 from yt_transcript_util.yt_transcript import YoutubeTranscriptRetriever
 import chromadb
-import chromadb.utils.embedding_functions as embedding_functions
 import json
 from src.ingestion.summarizer import TranscriptSummarizer
 
