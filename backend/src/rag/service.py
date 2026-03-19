@@ -5,12 +5,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 import json
 import httpx
+import logging
 from fastapi import status
 
 from src.rag.models import ResearchResult
 from src.db.redis_cache import cache_research_response, get_cached_research_response
 from src.config import Config
-from src.rag.schemas import RAGRequest, ResearchResultHistoryItem
+from src.rag.schemas import RAGInternalRequest, ResearchResultHistoryItem
+from src.rag.observability import stage_timer, new_request_id
+
+logger = logging.getLogger("uvicorn.error")
 
 class ResearchService:
     async def get_all_user_research_history(self, user_uid: UUID, session: AsyncSession, limit=50):
@@ -41,24 +45,27 @@ class ResearchService:
 
         return res.scalars().first()
     
-    async def generate_new_research(self, rag_request: RAGRequest, user_uid: UUID, session: AsyncSession):
-        async with httpx.AsyncClient() as client:
-            res = await client.post(
-                f"{Config.ML_SERVICE_ENDPOINT}/_generate_research",
-                json=rag_request.model_dump(),
-                timeout=120.0
-            )
+    async def generate_new_research(self, rag_internal_request: RAGInternalRequest, session: AsyncSession):
+        request_id = new_request_id()
+        with stage_timer(logger, "api_to_ml_roundtrip", request_id):
+            async with httpx.AsyncClient() as client:
+                res = await client.post(
+                    f"{Config.ML_SERVICE_ENDPOINT}/_generate_research",
+                    json=rag_internal_request.model_dump(mode="json"),
+                    headers={"x-request-id": request_id},
+                    timeout=None
+                )
         
         res_json = res.json()
-        res_json['user_uid'] = str(user_uid)
         res_json.pop('created_at', None)
         new_research_res = ResearchResult(**res_json)
 
-        session.add(new_research_res)
-        await session.commit()
-        await session.refresh(new_research_res)
+        with stage_timer(logger, "api_db_persist_research", request_id):
+            session.add(new_research_res)
+            await session.commit()
+            await session.refresh(new_research_res)
 
-        return res_json
+        return new_research_res
 
     async def delete_research_result(self, user_uid: UUID, result_id: UUID, session: AsyncSession):
         stmnt = select(ResearchResult).where(ResearchResult.result_id == result_id)

@@ -9,7 +9,7 @@ class ResearchResult(BaseModel):
     __tablename__ = "research_results"
 
     result_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_uid = Column(UUID(as_uuid=True), ForeignKey("user_accounts.uid"), nullable=True, index=True)
+    user_uid = Column(UUID(as_uuid=True), ForeignKey("user_accounts.uid"), nullable=False, index=True)
     user_query = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=False), server_default=func.current_timestamp())
 

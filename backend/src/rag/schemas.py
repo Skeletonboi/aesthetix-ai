@@ -4,6 +4,8 @@ from datetime import datetime
 
 class RAGRequest(BaseModel):
     msg: str
+    model_name: str
+    reasoning_enabled: bool
 
 class RAGInternalRequest(RAGRequest):
     user_uid: UUID

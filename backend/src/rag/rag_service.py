@@ -1,16 +1,19 @@
 import uuid
 import json
-from langchain_core.messages import SystemMessage, HumanMessage
 import logging
+from langchain_core.messages import SystemMessage, HumanMessage
 import re
 
 from src.rag.agent import Agent
 from src.rag.retriever import Retriever
-from src.rag.resource_pool import ResourcePool
+# from src.rag.resource_pool import ResourcePool
 from src.rag.schemas import ResearchResultFull
 from datetime import datetime, timezone
+from uuid import UUID
+from src.rag.resource_pool import ResourcePool
+from src.rag.observability import stage_timer, new_request_id
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("uvicorn.error")
 
 class RAGService():
     " Class for all RAG/chat endpoint services "
@@ -39,10 +42,26 @@ class RAGService():
 
         return final_msg
     
-    async def generate_research(self, query: str) -> ResearchResultFull:
-        research_queries, embedding_queries = await self.agent.gen_retrieval_queries(query)
-        chunks = Retriever.retrieve_embedded_chunks(embedding_queries)
-        papers = Retriever.retrieve_exa_papers(research_queries)
+    async def generate_research(
+        self,
+        user_uid: str,
+        query: str,
+        model_name: str = None,
+        reasoning_enabled: bool = True,
+        request_id: str | None = None,
+    ) -> ResearchResultFull:
+        req_id = request_id or new_request_id()
+        try:
+            llm_obj = ResourcePool.get_model(model_name)
+        except Exception as e:
+            raise RuntimeError(f"{e}")
+
+        with stage_timer(logger, "ml_query_generation", req_id):
+            research_queries, embedding_queries = await Retriever.gen_retrieval_queries(query, llm_obj)
+        with stage_timer(logger, "ml_retrieve_embedded_chunks", req_id):
+            chunks = Retriever.retrieve_embedded_chunks(embedding_queries)
+        with stage_timer(logger, "ml_retrieve_papers", req_id):
+            papers = Retriever.retrieve_exa_papers(research_queries)
 
         ts_str = ""
         for i, chunk in enumerate(chunks['transcript_chunks']):
@@ -87,7 +106,8 @@ class RAGService():
         Research Papers:
         {paper_str}
         """
-        res = await ResourcePool.llm_chat_model.ainvoke(prompt)
+        with stage_timer(logger, "ml_llm_synthesis", req_id):
+            res = await llm_obj.ainvoke(prompt, extra_body={'reasoning' : {'enabled': reasoning_enabled}})
         summaries_pattern = r'<SUMMARY\s+\d+>\s*(.*?)(?=(?:<SUMMARY\s+\d+>|<FINAL ANSWER>|$))'
         llm_chunk_responses = [s.strip() for s in re.findall(summaries_pattern, res.content, re.DOTALL)]
 
@@ -96,7 +116,7 @@ class RAGService():
 
         research_obj = ResearchResultFull(
             result_id = str(uuid.uuid4()),
-            user_uid = None,
+            user_uid = user_uid,
             user_query = query,
             created_at = None,
             research_queries = research_queries,

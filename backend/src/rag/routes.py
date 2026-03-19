@@ -6,7 +6,7 @@ from uuid import UUID
 
 # from sqlalchemy.ext.asyncio import AsyncSession
 # from src.db.db import get_session
-from src.rag.schemas import RAGRequest, RAGSingleResponse, ResearchResultFull, ResearchResultHistoryItem
+from src.rag.schemas import RAGInternalRequest, RAGRequest, RAGSingleResponse, ResearchResultFull, ResearchResultHistoryItem
 from src.auth.dependencies import AccessTokenBearer
 from src.config import Config
 from src.rag.service import ResearchService
@@ -16,18 +16,29 @@ rag_router = APIRouter()
 access_token_bearer = AccessTokenBearer()
 research_service = ResearchService()
 
+@rag_router.get("/get_available_models", response_model=list[str])
+async def get_available_models(
+    token_details: dict = Depends(access_token_bearer)
+):
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"{Config.ML_SERVICE_ENDPOINT}/_get_available_models"
+        )
+    
+    return res.json()
+
 @rag_router.post("/chat", response_model=RAGSingleResponse)
 async def full_single_response(
     rag_request: RAGRequest,
     token_details: dict = Depends(access_token_bearer)
     ):
-    user_uid = token_details["user"]["uid"]
-    rag_json = rag_request.model_dump()
-    rag_json["user_uid"] = user_uid
+    user_uid = UUID(token_details["user"]["uid"])
+    internal_req = RAGInternalRequest(**rag_request.model_dump(), user_uid=user_uid)
+
     async with httpx.AsyncClient() as client:
         res = await client.post(
             f"{Config.ML_SERVICE_ENDPOINT}/_full_single_response",
-            json=rag_json,
+            json=internal_req.model_dump(mode="json"), # helps convert UUID to json compatible representations i.e. str even though it should already do this
             timeout=120.0
         )
 
@@ -59,7 +70,9 @@ async def generate_new_research(
     token_details: dict = Depends(access_token_bearer)
 ):
     user_uid = UUID(token_details['user']['uid'])
-    res = await research_service.generate_new_research(rag_request, user_uid, session)
+    internal_req = RAGInternalRequest(**rag_request.model_dump(), user_uid=user_uid)
+
+    res = await research_service.generate_new_research(internal_req, session)
 
     return res
 
