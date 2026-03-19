@@ -12,12 +12,11 @@ class Settings(BaseSettings):
     REDIS_URL: str
     REDIS_HOST: str
     REDIS_PORT: str
-    LLM_API_KEY: str
+    OPENAI_API_KEY: str
+    OPENROUTER_API_KEY: str
     EXA_API_KEY: str
     YT_API_KEY: str
     HF_EMBED_MODEL_NAME: str
-    CHAT_MODEL_NAME: str
-    CHAT_MODEL_PROVIDER: str
     CHROMA_VDB_PATH: str
     TRANSCRIPT_PATH: str
     ML_SERVICE_ENDPOINT: str
