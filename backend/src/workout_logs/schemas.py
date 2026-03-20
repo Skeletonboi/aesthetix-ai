@@ -41,6 +41,7 @@ class WorkoutLogUpdate(BaseModel):
     reps: float
     weight: float
     date_performed: date
-    
+    notes: str | None = None
+
     class Config:
         from_attributes = True

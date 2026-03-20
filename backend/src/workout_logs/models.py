@@ -18,7 +18,7 @@ class WorkoutLog(BaseModel):
     
     reps = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
-    notes = Column(Text,)
+    notes = Column(Text, nullable=True)
     date_performed = Column(Date(), server_default=func.current_date())
     created_at = Column(DateTime(timezone=False), server_default=func.current_timestamp())
     
