@@ -92,7 +92,7 @@ class WorkoutLogService:
     async def update_log(self, wid: UUID, log_data: WorkoutLogUpdate, session: AsyncSession):
         log = await self.get_log_by_id(wid, session)
 
-        log_dict = log_data.model_dump()
+        log_dict = log_data.model_dump(exclude_unset=True)
         log_dict["exercise_eid"] = await ExerciseService.get_eid_from_slug(log_data.exercise_slug, session)
         log_dict.pop("exercise_slug")
         log_dict.pop("date_performed")

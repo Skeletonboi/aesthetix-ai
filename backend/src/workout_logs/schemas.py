@@ -10,6 +10,7 @@ class WorkoutLogBase(BaseModel):
     weight: float
     date_performed: date
     created_at: datetime | None = None
+    notes: str | None = None
     
     class Config:
         from_attributes = True

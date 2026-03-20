@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, DateTime, Integer, String, Float, func, ForeignKey
+from sqlalchemy import Column, Date, DateTime, Integer, String, Float, Text, func, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
@@ -18,6 +18,7 @@ class WorkoutLog(BaseModel):
     
     reps = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
+    notes = Column(Text,)
     date_performed = Column(Date(), server_default=func.current_date())
     created_at = Column(DateTime(timezone=False), server_default=func.current_timestamp())
     
