@@ -2,7 +2,9 @@
 import redis.asyncio as redis
 from src.config import Config
 
-JTI_EXPIRY = 3600
+# Keep revoked tokens blocked at least as long as the longest JWT we issue (refresh).
+def _jti_blocklist_ttl_seconds() -> int:
+    return int(Config.REFRESH_TOKEN_EXPIRY * 24 * 3600)
 
 redis_client = redis.Redis(
     host=Config.REDIS_HOST,
@@ -13,7 +15,9 @@ redis_client = redis.Redis(
 # token_blocklist = redis.from_url(Config.REDIS_URL)
 
 async def add_jti_to_blocklist(jti: str) -> None:
-    await redis_client.set(name=f"blocklist:{jti}", value="", ex=JTI_EXPIRY)
+    await redis_client.set(
+        name=f"blocklist:{jti}", value="", ex=_jti_blocklist_ttl_seconds()
+    )
 
 async def token_in_blocklist(jti: str) -> bool:
     return True if await redis_client.exists(f"blocklist:{jti}") else False
