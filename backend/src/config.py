@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     JWT_SECRET: str
     JWT_ALGORITHM: str
-    REFRESH_TOKEN_EXPIRY: int
+    # Short-lived access JWT (minutes). Typical for APIs: 15–30m.
+    ACCESS_TOKEN_EXPIRY_MINUTES: int = 30
+    # Long-lived refresh JWT (days). Typical consumer apps: 7–30d.
+    REFRESH_TOKEN_EXPIRY: int = 14
     REDIS_URL: str
     REDIS_HOST: str
     REDIS_PORT: str
